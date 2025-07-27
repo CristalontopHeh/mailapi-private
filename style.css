@@ -1,22 +1,17 @@
 body {
     font-family: Arial, sans-serif;
+    background: #f4f4f4;
+    color: #333;
     padding: 20px;
-    background: #f0f2f5;
 }
 
 h1 {
-    color: #333;
+    color: #0044cc;
 }
 
 .mail {
     background: white;
     padding: 15px;
-    margin-bottom: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-}
-
-hr {
-    border: none;
-    border-top: 1px solid #ccc;
+    margin-bottom: 10px;
+    border-radius: 5px;
 }
