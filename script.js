@@ -1,20 +1,10 @@
-async function fetchEmails() {
-    const res = await fetch("?action=fetch");
-    const mails = await res.json();
-    const container = document.getElementById("mail-list");
-    container.innerHTML = "";
-
-    mails.forEach(mail => {
-        const div = document.createElement("div");
-        div.className = "mail";
-        div.innerHTML = `
-            <h3>${mail.subject}</h3>
-            <p><strong>De :</strong> ${mail.from}</p>
-            <p>${mail.body.replace(/\n/g, "<br>")}</p>
-        `;
-        container.appendChild(div);
-    });
+function fetchMails() {
+    fetch('?action=fetch')
+        .then(res => res.text())
+        .then(html => {
+            document.getElementById('mail-list').innerHTML = html;
+        });
 }
 
-setInterval(fetchEmails, 10000);
-fetchEmails();
+setInterval(fetchMails, 10000); // auto-refresh chaque 10 secondes
+window.onload = fetchMails;
