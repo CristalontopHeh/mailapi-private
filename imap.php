@@ -1,51 +1,44 @@
 <?php
+
 function fetchEmails() {
     $hostname = '{imap.migadu.com:993/imap/ssl}INBOX';
     $username = 'admin@cristalmails.dedyn.io';
     $password = 'cristal-XIUZIX-XIAJDO-XOOAK';
-    $webhookUrl = 'https://discord.com/api/webhooks/1399129112957685861/r1XiAuFQqK8D0iFMqN-vpOlEh1bcrw4VAsGpKDDVE7rYjliqPcz_sTiHp5a2snRAj8QL';
+    $webhook = 'https://discord.com/api/webhooks/1399129112957685861/r1XiAuFQqK8D0iFMqN-vpOlEh1bcrw4VAsGpKDDVE7rYjliqPcz_sTiHp5a2snRAj8QL';
 
     $inbox = @imap_open($hostname, $username, $password);
-    if (!$inbox) {
-        return [["subject" => "❌ Connexion IMAP échouée", "from" => "Serveur", "body" => imap_last_error()]];
-    }
+    if (!$inbox) return [];
 
-    $emails = [];
-    $emails_ids = imap_search($inbox, 'ALL');
-    if ($emails_ids) {
-        rsort($emails_ids); // plus récents en premier
-        foreach (array_slice($emails_ids, 0, 10) as $email_number) {
+    $emails = imap_search($inbox, 'ALL');
+    $results = [];
+
+    if ($emails) {
+        rsort($emails);
+        foreach ($emails as $email_number) {
             $overview = imap_fetch_overview($inbox, $email_number, 0)[0];
-            $body = trim(strip_tags(imap_fetchbody($inbox, $email_number, 1)));
-
+            $message = imap_fetchbody($inbox, $email_number, 1);
+            $message = substr(trim($message), 0, 500); // raccourcir
             $mail = [
-                "subject" => $overview->subject ?? "(Sans sujet)",
-                "from" => $overview->from ?? "(Expéditeur inconnu)",
-                "body" => mb_substr($body, 0, 1000)
+                'subject' => $overview->subject ?? '(Sans sujet)',
+                'from' => $overview->from ?? '(Inconnu)',
+                'body' => $message
             ];
-            $emails[] = $mail;
+            $results[] = $mail;
 
-            sendToDiscord($mail, $webhookUrl);
+            // Discord envoi
+            $json = json_encode([
+                'content' => "**📧 Nouveau mail reçu**\n**De :** {$mail['from']}\n**Sujet :** {$mail['subject']}\n**Contenu :**\n" . $mail['body']
+            ]);
+            $ch = curl_init($webhook);
+            curl_setopt($ch, CURLOPT_POST, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $json);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_exec($ch);
+            curl_close($ch);
         }
     }
+
     imap_close($inbox);
-    return $emails;
-}
-
-function sendToDiscord($mail, $webhookUrl) {
-    $content = "**📧 Nouveau mail reçu**\n\n";
-    $content .= "**De :** " . $mail['from'] . "\n";
-    $content .= "**Sujet :** " . $mail['subject'] . "\n";
-    $content .= "**Contenu :**\n" . mb_substr($mail['body'], 0, 500);
-
-    $payload = json_encode(["content" => $content]);
-    $ch = curl_init($webhookUrl);
-    curl_setopt_array($ch, [
-        CURLOPT_POST => true,
-        CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
-        CURLOPT_POSTFIELDS => $payload,
-        CURLOPT_RETURNTRANSFER => true,
-    ]);
-    curl_exec($ch);
-    curl_close($ch);
+    return $results;
 }
