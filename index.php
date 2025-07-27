@@ -1,31 +1,27 @@
 <?php
 include 'imap.php';
 
-if (isset($_GET['action']) && $_GET['action'] === 'fetch') {
-    $emails = fetchEmails();
-    foreach ($emails as $mail) {
-        echo "<div class='mail'>";
-        echo "<h3>" . htmlspecialchars($mail['subject']) . "</h3>";
-        echo "<p><strong>De :</strong> " . htmlspecialchars($mail['from']) . "</p>";
-        echo "<p>" . nl2br(htmlspecialchars($mail['body'])) . "</p>";
-        echo "</div><hr>";
-    }
-    exit;
-}
+$emails = fetchEmails();
 ?>
 
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>CristalMail</title>
+    <title>📬 CristalMail</title>
     <link rel="stylesheet" href="style.css">
-    <script src="script.js" defer></script>
 </head>
 <body>
-    <h1>📥 CristalMail</h1>
-    <p>Les e-mails arrivent en temps réel, et sont envoyés sur Discord.</p>
-    <button onclick="fetchMails()">🔄 Rafraîchir</button>
-    <div id="mail-list"></div>
+    <h1>📥 CristalMail - Boîte de réception</h1>
+    <p>Les e-mails arrivent en temps réel, et sont envoyés sur Discord !</p>
+    <div id="mail-list">
+        <?php foreach ($emails as $mail): ?>
+            <div class="mail">
+                <h3><?= htmlspecialchars($mail['subject']) ?></h3>
+                <p><strong>De :</strong> <?= htmlspecialchars($mail['from']) ?></p>
+                <p><?= nl2br(htmlspecialchars($mail['body'])) ?></p>
+            </div><hr>
+        <?php endforeach; ?>
+    </div>
 </body>
 </html>
