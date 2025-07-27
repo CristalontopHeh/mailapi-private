@@ -3,13 +3,8 @@ include 'imap.php';
 
 if (isset($_GET['action']) && $_GET['action'] === 'fetch') {
     $emails = fetchEmails();
-    foreach ($emails as $mail) {
-        echo "<div class='mail'>";
-        echo "<h3>" . htmlspecialchars($mail['subject']) . "</h3>";
-        echo "<p><strong>De :</strong> " . htmlspecialchars($mail['from']) . "</p>";
-        echo "<p>" . nl2br(htmlspecialchars($mail['body'])) . "</p>";
-        echo "</div><hr>";
-    }
+    header('Content-Type: application/json');
+    echo json_encode($emails);
     exit;
 }
 ?>
@@ -25,17 +20,6 @@ if (isset($_GET['action']) && $_GET['action'] === 'fetch') {
 <body>
     <h1>📥 CristalMail - Boîte de réception</h1>
     <p>Les e-mails arrivent en temps réel, et sont envoyés sur Discord !</p>
-    <div id="mail-list">
-        <?php
-        $emails = fetchEmails();
-        foreach ($emails as $mail) {
-            echo "<div class='mail'>";
-            echo "<h3>" . htmlspecialchars($mail['subject']) . "</h3>";
-            echo "<p><strong>De :</strong> " . htmlspecialchars($mail['from']) . "</p>";
-            echo "<p>" . nl2br(htmlspecialchars($mail['body'])) . "</p>";
-            echo "</div><hr>";
-        }
-        ?>
-    </div>
+    <div id="mail-list"></div>
 </body>
 </html>
